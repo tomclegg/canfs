@@ -3,9 +3,9 @@
 Package canfs embeds file data in a Go program and exports it as an
 http.FileSystem.
 
-To use a FileSystem, import canfs and add a "go generate" step to your project:
+To use a FileSystem, import canfs and add a "go generate" step to your project.
 
-    import _ "github.com/tomclegg/canfs"
+    import _ "github.com/tomclegg/canfs" // ensures "go get -d mypkg" also gets canfs, so "go generate mypkg" works
     //go:generate go run $GOPATH/src/github.com/tomclegg/canfs/generate.go -id=assetfs -out=assetfs_generated.go -dir=./assets -pkg=main
 
 When you run "go generate [your-package]", canfs will create a file called
