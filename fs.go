@@ -14,8 +14,10 @@
 // "assetfs" whose root directory is a mirror of the "assets"
 // directory from your source tree.
 //
-// For example, http.ListenAndServe(":", assetfs) will respond to
-// "/foo" with content from "./assets/foo" from your source directory.
+// Then, to serve "/foo" using content from "./assets/foo" in your
+// source directory:
+//
+//   http.ListenAndServe(":", http.FileServer(assetfs))
 //
 // Options
 //
