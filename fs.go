@@ -5,7 +5,7 @@
 // your project:
 //
 //   import _ "github.com/tomclegg/canfs"
-//   //go:generate go run $GOPATH/src/github.com/tomclegg/canfs/generate.go -id=assetfs -out=assetfs_generated.go -dir=./assets
+//   //go:generate go run $GOPATH/src/github.com/tomclegg/canfs/generate.go -id=assetfs -out=assetfs_generated.go -dir=./assets -pkg=main
 //
 // When you run "go generate [your-package]", canfs will create a file
 // called "assetfs_generated.go" with a FileSystem variable called
@@ -15,7 +15,18 @@
 // For example, http.ListenAndServe(":", assetfs) will respond to
 // "/foo" with content from "./assets/foo" from your source directory.
 //
-// Features and limitations
+// Options
+//
+// -out=fnm sets the output (generated code) filename.
+//
+// -dir=path sets the source directory.
+//
+// -pkg=name sets the package name in the generated code.
+//
+// -id=name sets the name of the filesystem variable in the generated
+// code.
+//
+// Features And Limitations
 //
 // File metadata (notably modification times) are preserved.
 //
@@ -104,3 +115,5 @@ func (fi fileInfo) IsDir() bool {
 func (fi fileInfo) Sys() interface{} {
 	return nil
 }
+
+//go:generate sh -c "godocdown >README.md"
