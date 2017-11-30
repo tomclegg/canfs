@@ -39,3 +39,5 @@ Symbolic links to files are followed. Symbolic links to directories are not
 followed.
 
 Directory listings are not yet supported.
+
+SPDX-License-Identifier: CC0-1.0

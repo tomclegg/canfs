@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: CC0-1.0
+
 // Package canfs embeds file data in a Go program and exports it as an
 // http.FileSystem.
 //
