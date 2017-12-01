@@ -49,6 +49,7 @@ import (
 	"bytes"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -68,6 +69,9 @@ type FileData struct {
 
 // Open implements http.FileSystem.
 func (fs FileSystem) Open(path string) (http.File, error) {
+	if strings.HasSuffix(path, "/") {
+		return file{fileInfo: fileInfo{fd: FileData{Mode: os.ModeDir}}}, nil
+	}
 	fd, ok := fs.Content[path]
 	if !ok {
 		return nil, os.ErrNotExist
@@ -113,7 +117,7 @@ func (fi fileInfo) ModTime() time.Time {
 }
 
 func (fi fileInfo) IsDir() bool {
-	return false
+	return fi.fd.Mode&os.ModeDir != 0
 }
 
 func (fi fileInfo) Sys() interface{} {
