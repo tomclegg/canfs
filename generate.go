@@ -33,7 +33,7 @@ func main() {
 }
 
 func generate(id, out, dir, pkg string) error {
-	outFile, err := os.OpenFile(out+".tmp", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
+	outFile, err := os.OpenFile(out+".tmp", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
