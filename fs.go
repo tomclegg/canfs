@@ -63,7 +63,7 @@ type FileData struct {
 	Name    string
 	Mode    os.FileMode
 	Size    int64
-	ModTime time.Time
+	ModTime int64
 	Bytes   []byte
 }
 
@@ -113,7 +113,7 @@ func (fi fileInfo) Size() int64 {
 }
 
 func (fi fileInfo) ModTime() time.Time {
-	return fi.fd.ModTime
+	return time.Unix(0, fi.fd.ModTime)
 }
 
 func (fi fileInfo) IsDir() bool {

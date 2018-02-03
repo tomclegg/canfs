@@ -14,7 +14,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/tomclegg/canfs"
@@ -50,20 +49,11 @@ func generate(id, out, dir, pkg string) error {
 	data := canfs.FileSystem{Content: content}
 	buf := &bytes.Buffer{}
 	fmt.Fprintf(buf, "package %s\n", pkg)
-	if len(content) > 0 {
-		fmt.Fprintf(buf, "import \"time\"\n")
-	}
 	fmt.Fprintf(buf, "import \"github.com/tomclegg/canfs\"\n")
 	fmt.Fprintf(buf, "var %s = %#v\n", id, data)
 
-	re, err := regexp.Compile(`time.Time{sec:(\d+), nsec:(\d+).*?}`)
-	if err != nil {
-		return err
-	}
-	munged := re.ReplaceAll(buf.Bytes(), []byte(`time.Unix($1-62135596800,$2)`))
-
 	gofmt := exec.Command("gofmt", "-s")
-	gofmt.Stdin = bytes.NewReader(munged)
+	gofmt.Stdin = buf
 	gofmt.Stdout = outFile
 	gofmt.Stderr = os.Stderr
 	err = gofmt.Run()
@@ -96,7 +86,7 @@ func (bldr builder) walkFunc(path string, info os.FileInfo, err error) error {
 		Name:    info.Name(),
 		Mode:    info.Mode(),
 		Size:    info.Size(),
-		ModTime: info.ModTime(),
+		ModTime: info.ModTime().UnixNano(),
 		Bytes:   buf,
 	}
 	return nil
