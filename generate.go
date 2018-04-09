@@ -40,7 +40,7 @@ func generate(id, out, dir, pkg string) error {
 		os.Remove(out + ".tmp")
 	}()
 
-	content := map[string]canfs.FileData{}
+	content := map[string]canfs.FileInfo{}
 	root := strings.TrimSuffix(path.Clean(dir), "/")
 	err = filepath.Walk(root, builder{strip: root, content: content}.walkFunc)
 	if err != nil {
@@ -70,7 +70,7 @@ func generate(id, out, dir, pkg string) error {
 
 type builder struct {
 	strip   string
-	content map[string]canfs.FileData
+	content map[string]canfs.FileInfo
 }
 
 func (bldr builder) walkFunc(path string, info os.FileInfo, err error) error {
@@ -82,12 +82,19 @@ func (bldr builder) walkFunc(path string, info os.FileInfo, err error) error {
 		return err
 	}
 	path = strings.TrimPrefix(path, bldr.strip)
-	bldr.content[path] = canfs.FileData{
-		Name:    info.Name(),
-		Mode:    info.Mode(),
-		Size:    info.Size(),
-		ModTime: info.ModTime().UnixNano(),
-		Bytes:   buf,
+
+	var data canfs.FileData
+	if s := string(buf); bytes.Compare([]byte(s), buf) == 0 {
+		data = canfs.StringData{s}
+	} else {
+		data = canfs.ByteData{buf}
+	}
+	bldr.content[path] = canfs.FileInfo{
+		N:        info.Name(),
+		M:        info.Mode(),
+		S:        info.Size(),
+		MT:       info.ModTime().UnixNano(),
+		FileData: data,
 	}
 	return nil
 }

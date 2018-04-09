@@ -55,33 +55,47 @@ import (
 
 // FileSystem implements http.FileSystem with embedded content.
 type FileSystem struct {
-	Content map[string]FileData
+	Content map[string]FileInfo
 }
 
-// FileData is embedded file content and metadata.
-type FileData struct {
-	Name    string
-	Mode    os.FileMode
-	Size    int64
-	ModTime int64
-	Bytes   []byte
+type FileData interface {
+	Bytes() []byte
+}
+
+type ByteData struct {
+	Data []byte
+}
+
+func (bd ByteData) Bytes() []byte {
+	return bd.Data
+}
+
+type StringData struct {
+	Data string
+}
+
+func (sd StringData) Bytes() []byte {
+	return []byte(sd.Data)
 }
 
 // Open implements http.FileSystem.
 func (fs FileSystem) Open(path string) (http.File, error) {
 	if strings.HasSuffix(path, "/") {
-		return file{fileInfo: fileInfo{fd: FileData{Mode: os.ModeDir}}}, nil
+		return file{FileInfo: FileInfo{M: os.ModeDir}}, nil
 	}
-	fd, ok := fs.Content[path]
+	fi, ok := fs.Content[path]
 	if !ok {
 		return nil, os.ErrNotExist
 	}
-	return file{Reader: bytes.NewReader(fd.Bytes), fileInfo: fileInfo{fd: fd}}, nil
+	return file{
+		Reader:   bytes.NewReader(fi.Bytes()),
+		FileInfo: fi,
+	}, nil
 }
 
 type file struct {
+	FileInfo
 	*bytes.Reader
-	fileInfo
 }
 
 func (file) Close() error {
@@ -93,34 +107,38 @@ func (file) Readdir(int) ([]os.FileInfo, error) {
 }
 
 func (f file) Stat() (os.FileInfo, error) {
-	return f.fileInfo, nil
+	return f.FileInfo, nil
 }
 
-type fileInfo struct {
-	fd FileData
+type FileInfo struct {
+	N  string      // name
+	M  os.FileMode // mode
+	S  int64       // size
+	MT int64       // modtime
+	FileData
 }
 
-func (fi fileInfo) Name() string {
-	return fi.fd.Name
+func (fi FileInfo) Name() string {
+	return fi.N
 }
 
-func (fi fileInfo) Mode() os.FileMode {
-	return fi.fd.Mode
+func (fi FileInfo) Mode() os.FileMode {
+	return fi.M
 }
 
-func (fi fileInfo) Size() int64 {
-	return fi.fd.Size
+func (fi FileInfo) Size() int64 {
+	return fi.S
 }
 
-func (fi fileInfo) ModTime() time.Time {
-	return time.Unix(0, fi.fd.ModTime)
+func (fi FileInfo) ModTime() time.Time {
+	return time.Unix(0, fi.MT)
 }
 
-func (fi fileInfo) IsDir() bool {
-	return fi.fd.Mode&os.ModeDir != 0
+func (fi FileInfo) IsDir() bool {
+	return fi.M&os.ModeDir != 0
 }
 
-func (fi fileInfo) Sys() interface{} {
+func (fi FileInfo) Sys() interface{} {
 	return nil
 }
 
