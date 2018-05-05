@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/tomclegg/canfs"
@@ -46,11 +47,19 @@ func generate(id, out, dir, pkg string) error {
 	if err != nil {
 		return err
 	}
-	data := canfs.FileSystem{Content: content}
 	buf := &bytes.Buffer{}
 	fmt.Fprintf(buf, "package %s\n", pkg)
 	fmt.Fprintf(buf, "import \"github.com/tomclegg/canfs\"\n")
-	fmt.Fprintf(buf, "var %s = %#v\n", id, data)
+	fmt.Fprintf(buf, "var %s = canfs.FileSystem{Content: map[string]canfs.FileInfo{\n", id)
+	var paths []string
+	for path := range content {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+	for _, path := range paths {
+		fmt.Fprintf(buf, "\t%q: %#v,\n", path, content[path])
+	}
+	fmt.Fprintf(buf, "}}\n")
 
 	gofmt := exec.Command("gofmt", "-s")
 	gofmt.Stdin = buf
